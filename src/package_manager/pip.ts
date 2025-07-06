@@ -1,6 +1,7 @@
 import * as im from "@actions/exec/lib/interfaces"; // eslint-disable-line no-unused-vars
 import * as path from "path";
 import * as utils from "../utils";
+import * as core from "@actions/core";
 
 const pip3Packages: string[] = [
 	"argcomplete",
@@ -82,6 +83,9 @@ export async function runPython3PipInstall(
 	run_with_sudo: boolean = true,
 ): Promise<number> {
 	const args = pip3CommandLine.concat(packages);
+	core.group(`Installing Python3 pip packages: ${packages.join(", ")}`, () => {
+		core.info(`Running command: ${args.join(" ")}`);
+	});
 	// Set CWD to root to avoid running 'pip install' in directory with setup.cfg file
 	const options: im.ExecOptions = {
 		cwd: path.sep,
@@ -90,7 +94,9 @@ export async function runPython3PipInstall(
 		await utils.exec("sudo", pip3ConfigCommandLine);
 		return utils.exec("sudo", args, options);
 	} else {
+		core.info(`exec pip3ConfigCommandLine: ${pip3ConfigCommandLine.join(" ")}`);
 		await utils.exec(pip3ConfigCommandLine[0], pip3ConfigCommandLine.splice(1));
+		core.info(`exec args: ${args.join(" ")}`);
 		return utils.exec(args[0], args.splice(1), options);
 	}
 }
